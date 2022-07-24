@@ -1,16 +1,37 @@
 local GossipTracker = CreateFrame("Frame");
 GossipTracker:RegisterEvent("GOSSIP_SHOW");
+GossipTracker:RegisterEvent("TRAINER_SHOW");
+GossipTracker:RegisterEvent("GOSSIP_CLOSED");
 GossipTracker:RegisterEvent("QUEST_PROGRESS");
 GossipTracker:RegisterEvent("QUEST_COMPLETE");
 GossipTracker:RegisterEvent("QUEST_DETAIL");
 GossipTracker:RegisterEvent("ITEM_TEXT_READY");
+
+C_GossipInfo.ForceGossip = function()
+	return ForceGossipTemp
+end
+
+if C_GossipInfo.ForceGossip() == nil then
+	ForceGossipTemp = false
+end
+
 function GossipTracker:OnEvent(event,arg1)
 	local info = ChatTypeInfo["MONSTER_SAY"]
-	if event == "GOSSIP_SHOW" then
+	if event == "GOSSIP_SHOW" and C_GossipInfo.ForceGossip() == true then
 		local sender = GossipFrameNpcNameText:GetText()
-		local body = CHAT_SAY_GET:format(sender) .. GossipGreetingText:GetText()
+		local body = CHAT_SAY_GET:format(sender) .. C_GossipInfo.GetText()
 		
 		DEFAULT_CHAT_FRAME:AddMessage(body, info.r, info.g, info.b, info.id)
+	end
+	if event == "GOSSIP_SHOW" and C_GossipInfo.ForceGossip() == false then
+		ForceGossipTemp = true
+		local sender = UnitName("target")
+		local body = CHAT_SAY_GET:format(sender) .. C_GossipInfo.GetText()
+		
+		DEFAULT_CHAT_FRAME:AddMessage(body, info.r, info.g, info.b, info.id)
+
+
+		ForceGossipTemp = false 
 	end
 	if event == "QUEST_PROGRESS" then
 		local sender = QuestFrameNpcNameText:GetText()
