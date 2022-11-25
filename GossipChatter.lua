@@ -619,6 +619,9 @@ function GossipTracker:OnEvent(event,arg1)
 	end
 
 	if event == "GOSSIP_SHOW"  then
+		if C_GossipInfo.GetText() == nil then
+			return
+		end
 		sender = GossipFrameTitleText:GetText() or UnitName("target")
 		body = CHAT_SAY_GET:format(sender) .. C_GossipInfo.GetText()
 		body = string.gsub(body, "<", "|cffFF7F40<")
@@ -634,6 +637,9 @@ function GossipTracker:OnEvent(event,arg1)
 
 	end
 	if event == "QUEST_GREETING" then
+		if GreetingText:GetText() == nil then
+			return
+		end
 		sender = QuestFrameTitleText:GetText()
 		body = CHAT_SAY_GET:format(sender) .. GreetingText:GetText()
 		body = string.gsub(body, "<", "|cffFF7F40<")
@@ -645,6 +651,9 @@ function GossipTracker:OnEvent(event,arg1)
 		DEFAULT_CHAT_FRAME:AddMessage(timeStamps .. body, info.r, info.g, info.b, info.id)
 	end
 	if event == "QUEST_PROGRESS" then
+		if QuestProgressText:GetText() == nil then
+			return
+		end
 		sender = QuestFrameTitleText:GetText()
 		body = CHAT_SAY_GET:format(sender) .. QuestProgressText:GetText()
 		body = string.gsub(body, "<", "|cffFF7F40<")
@@ -656,6 +665,9 @@ function GossipTracker:OnEvent(event,arg1)
 		DEFAULT_CHAT_FRAME:AddMessage(timeStamps .. body, info.r, info.g, info.b, info.id)
 	end
 	if event == "QUEST_COMPLETE" then
+		if QuestInfoRewardText:GetText() == nil then
+			return
+		end
 		sender = QuestFrameTitleText:GetText()
 		body = CHAT_SAY_GET:format(sender) .. QuestInfoRewardText:GetText()
 		body = string.gsub(body, "<", "|cffFF7F40<")
@@ -667,6 +679,9 @@ function GossipTracker:OnEvent(event,arg1)
 		DEFAULT_CHAT_FRAME:AddMessage(timeStamps .. body, info.r, info.g, info.b, info.id)
 	end
 	if event == "QUEST_DETAIL" then
+		if QuestInfoDescriptionText:GetText() == nil then
+			return
+		end
 		sender = QuestFrameTitleText:GetText()
 		body = CHAT_SAY_GET:format(sender) .. QuestInfoDescriptionText:GetText()
 		body = string.gsub(body, "<", "|cffFF7F40<")
@@ -678,6 +693,9 @@ function GossipTracker:OnEvent(event,arg1)
 		DEFAULT_CHAT_FRAME:AddMessage(timeStamps .. body, info.r, info.g, info.b, info.id)
 	end
 	if event == "ITEM_TEXT_READY" then	
+		if ItemTextGetText() == nil then
+			return
+		end
 		local info = ChatTypeInfo["MONSTER_EMOTE"]
 		sender = ItemTextFrameTitleText:GetText()
 
