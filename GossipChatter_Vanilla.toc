@@ -1,8 +1,8 @@
-## Interface: 100007
+## Interface: 11403
 ## Title: Gossip Chatter
 ## Notes: Prints the gossip / quest text in chat as if an NPC were speaking in /say.
 ## Author: Keyboardturn
 ## Version: 0.1.0
 ## SavedVariables: GossipChatter_DB
 
-GossipChatter.lua
+GossipChatter_Vanilla.lua
