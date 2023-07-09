@@ -1,9 +1,9 @@
-## Interface: 100100
+## Interface: 100105
 ## Title: Gossip Chatter
 ## Notes: Prints the gossip / quest text in chat as if an NPC were speaking in /say.
 ## IconTexture: Interface/Addons/GossipChatter/GossipChatter.blp
 ## Author: Keyboardturn
-## Version: 0.1.1
+## Version: 0.1.2
 ## SavedVariables: GossipChatter_DB
 
 GossipChatter.lua
