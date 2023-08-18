@@ -11,3 +11,5 @@
 
 ![image](https://i.imgur.com/oPMAfze.png)
 ![item text](https://i.imgur.com/rhdjdPm.png)
+
+A link to my discord for addon projects and other things can be found [here](https://discord.gg/tA4rrmjPp8).
