@@ -2,7 +2,7 @@
 ## Title: Gossip Chatter
 ## Notes: Prints the gossip / quest text in chat as if an NPC were speaking in /say.
 ## Author: Keyboardturn
-## Version: 0.1.2
+## Version: 0.1.3
 ## SavedVariables: GossipChatter_DB
 
 GossipChatter_Wrath.lua
