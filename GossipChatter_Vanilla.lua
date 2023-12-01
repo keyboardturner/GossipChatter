@@ -654,15 +654,15 @@ function GossipTracker:OnEvent(event,arg1)
 	end
 
 	if event == "GOSSIP_SHOW"  then
-		if GossipGreetingText:GetText() == nil then
+		if C_GossipInfo.GetText() == nil then
 			return
 		end
-		grabText = GossipGreetingText:GetText()
-		sender = GossipFrameNpcNameText:GetText() or UnitName("target")
+		grabText = C_GossipInfo.GetText()
+		sender = GossipFrame.TitleContainer.TitleText:GetText() or UnitName("target")
 		body = CHAT_SAY_GET:format(sender) .. grabText
 		body = string.gsub(body, "<", "|cffFF7F40<")
 		body = string.gsub(body, ">", ">|r")
-		if GossipGreetingText:GetText() == nil then
+		if C_GossipInfo.GetText() == nil then
 			return
 		else
 			if GossipChatter_DB.TTSButton.auto == true then

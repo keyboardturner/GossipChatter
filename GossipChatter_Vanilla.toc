@@ -1,4 +1,4 @@
-## Interface: 11404
+## Interface: 11500
 ## Title: Gossip Chatter
 ## Notes: Prints the gossip / quest text in chat as if an NPC were speaking in /say.
 ## Author: Keyboardturn
