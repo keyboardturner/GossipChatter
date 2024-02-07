@@ -657,9 +657,17 @@ function GossipTracker:OnEvent(event,arg1)
 		if C_GossipInfo.GetText() == nil then
 			return
 		end
-		grabText = C_GossipInfo.GetText()
+		if C_GossipInfo.GetText() then
+			grabText = C_GossipInfo.GetText()
+		else
+			grabText = ""
+		end
 		sender = GossipFrameTitleText:GetText() or UnitName("target")
-		body = CHAT_SAY_GET:format(sender) .. grabText
+		if CHAT_SAY_GET:format(sender) then
+			body = CHAT_SAY_GET:format(sender) .. grabText
+		else
+			body = "" .. grabText
+		end
 		body = string.gsub(body, "<", "|cffFF7F40<")
 		body = string.gsub(body, ">", ">|r")
 		if C_GossipInfo.GetText() == nil then
