@@ -1,3 +1,7 @@
+# 0.1.8
+
+nil check fix _ retail
+
 # 0.1.7
 
 toc bump for 10.2.5
