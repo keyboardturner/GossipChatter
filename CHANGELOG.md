@@ -1,3 +1,7 @@
+# 0.1.9
+
+toc bump to 10.2.6
+
 # 0.1.8
 
 nil check fix _ retail
