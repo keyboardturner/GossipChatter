@@ -1,3 +1,7 @@
+# 0.2.1
+
+fix Cata suffix
+
 # 0.2.0
 
 toc bump to 10.2.7
