@@ -244,7 +244,7 @@ GossipChatterPanel.Version:SetFont(GossipChatterPanel.Version:GetFont(), 12);
 GossipChatterPanel.Version:SetTextColor(1,1,1,1);
 GossipChatterPanel.Version:ClearAllPoints();
 GossipChatterPanel.Version:SetPoint("TOPLEFT", GossipChatterPanel, "TOPLEFT",400,-21);
-GossipChatterPanel.Version:SetText("Version: " .. GetAddOnMetadata("GossipChatter", "Version"));
+GossipChatterPanel.Version:SetText("Version: " .. C_AddOns.GetAddOnMetadata("GossipChatter", "Version"));
 
 GossipChatterPanel.Hyperlink = GossipChatterPanel:CreateFontString(nil, "OVERLAY", "GameFontNormal");
 GossipChatterPanel.Hyperlink:SetFont(GossipChatterPanel.Hyperlink:GetFont(), 12);
@@ -624,7 +624,11 @@ end)
 ------------------------------------------------------------------------------------------------------------------
 
 --final
-InterfaceOptions_AddCategory(GossipChatterPanel);
+local category, layout = Settings.RegisterCanvasLayoutCategory(GossipChatterPanel, GossipChatterPanel.name, GossipChatterPanel.name);
+category.ID = GossipChatterPanel.name;
+Settings.RegisterAddOnCategory(category)
+
+--InterfaceOptions_AddCategory(GossipChatterPanel);
 
 
 ------------------------------------------------------------------------------------------------------------------
