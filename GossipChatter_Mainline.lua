@@ -689,12 +689,12 @@ function GossipTracker:OnEvent(event,arg1)
 
 	end
 	if event == "QUEST_GREETING" then
-		if GetQuestText() == nil then
+		if GetGreetingText() == nil then
 			return
 		end
 
 		--GetQuestText() ?
-		grabText = GetQuestText()
+		grabText = GetGreetingText()
 		sender = UnitName("npc") or UnitName("questnpc")
 		body = CHAT_SAY_GET:format(sender) .. grabText
 		body = string.gsub(body, "<", "|cffFF7F40<")
@@ -752,12 +752,12 @@ function GossipTracker:OnEvent(event,arg1)
 		DEFAULT_CHAT_FRAME:AddMessage(timeStamps .. body, info.r, info.g, info.b, info.id)
 	end
 	if event == "QUEST_DETAIL" then
-		if GetGreetingText() == nil then
+		if GetQuestText() == nil then
 			return
 		end
 
 		--GetGreetingText() ?
-		grabText = GetGreetingText()
+		grabText = GetQuestText()
 		sender = UnitName("npc") or UnitName("questnpc")
 		body = CHAT_SAY_GET:format(sender) .. grabText
 		body = string.gsub(body, "<", "|cffFF7F40<")
@@ -778,7 +778,7 @@ function GossipTracker:OnEvent(event,arg1)
 		end
 		local info = ChatTypeInfo["MONSTER_EMOTE"]
 		grabText = ItemTextGetText()
-		sender = ItemTextFrameTitleText:GetText() or UnitName("npc") or UnitName("questnpc")
+		sender = UnitName("npc") or ItemTextFrameTitleText:GetText() or UnitName("questnpc")
 
 		body = CHAT_EMOTE_GET:format(sender) .. pagenumber .. grabText
 		body = string.gsub(body, "<", "|cffFF7F40<")
