@@ -666,7 +666,7 @@ function GossipTracker:OnEvent(event,arg1)
 		else
 			grabText = ""
 		end
-		sender = GossipFrameTitleText:GetText() or UnitName("target")
+		sender = UnitName("npc") or GossipFrameTitleText:GetText() or UnitName("questnpc") or UnitName("target")
 		if CHAT_SAY_GET:format(sender) then
 			body = CHAT_SAY_GET:format(sender) .. grabText
 		else
@@ -689,11 +689,13 @@ function GossipTracker:OnEvent(event,arg1)
 
 	end
 	if event == "QUEST_GREETING" then
-		if GreetingText:GetText() == nil then
+		if GetQuestText() == nil then
 			return
 		end
-		grabText = GreetingText:GetText()
-		sender = QuestFrameTitleText:GetText()
+
+		--GetQuestText() ?
+		grabText = GetQuestText()
+		sender = UnitName("npc") or UnitName("questnpc")
 		body = CHAT_SAY_GET:format(sender) .. grabText
 		body = string.gsub(body, "<", "|cffFF7F40<")
 		body = string.gsub(body, ">", ">|r")
@@ -708,11 +710,13 @@ function GossipTracker:OnEvent(event,arg1)
 		DEFAULT_CHAT_FRAME:AddMessage(timeStamps .. body, info.r, info.g, info.b, info.id)
 	end
 	if event == "QUEST_PROGRESS" then
-		if QuestProgressText:GetText() == nil then
+		if GetProgressText() == nil then
 			return
 		end
-		grabText = QuestProgressText:GetText()
-		sender = QuestFrameTitleText:GetText()
+
+		--GetProgressText() ?
+		grabText = GetProgressText()
+		sender = UnitName("npc") or UnitName("questnpc")
 		body = CHAT_SAY_GET:format(sender) .. grabText
 		body = string.gsub(body, "<", "|cffFF7F40<")
 		body = string.gsub(body, ">", ">|r")
@@ -727,11 +731,13 @@ function GossipTracker:OnEvent(event,arg1)
 		DEFAULT_CHAT_FRAME:AddMessage(timeStamps .. body, info.r, info.g, info.b, info.id)
 	end
 	if event == "QUEST_COMPLETE" then
-		if QuestInfoRewardText:GetText() == nil then
+		if GetRewardText() == nil then
 			return
 		end
-		grabText = QuestInfoRewardText:GetText()
-		sender = QuestFrameTitleText:GetText()
+
+		-- GetRewardText() ?
+		grabText = GetRewardText()
+		sender = UnitName("npc") or UnitName("questnpc")
 		body = CHAT_SAY_GET:format(sender) .. grabText
 		body = string.gsub(body, "<", "|cffFF7F40<")
 		body = string.gsub(body, ">", ">|r")
@@ -746,11 +752,13 @@ function GossipTracker:OnEvent(event,arg1)
 		DEFAULT_CHAT_FRAME:AddMessage(timeStamps .. body, info.r, info.g, info.b, info.id)
 	end
 	if event == "QUEST_DETAIL" then
-		if QuestInfoDescriptionText:GetText() == nil then
+		if GetGreetingText() == nil then
 			return
 		end
-		grabText = QuestInfoDescriptionText:GetText()
-		sender = QuestFrameTitleText:GetText()
+
+		--GetGreetingText() ?
+		grabText = GetGreetingText()
+		sender = UnitName("npc") or UnitName("questnpc")
 		body = CHAT_SAY_GET:format(sender) .. grabText
 		body = string.gsub(body, "<", "|cffFF7F40<")
 		body = string.gsub(body, ">", ">|r")
@@ -770,7 +778,7 @@ function GossipTracker:OnEvent(event,arg1)
 		end
 		local info = ChatTypeInfo["MONSTER_EMOTE"]
 		grabText = ItemTextGetText()
-		sender = ItemTextFrameTitleText:GetText()
+		sender = UnitName("npc") or ItemTextFrameTitleText:GetText() or UnitName("questnpc")
 
 		body = CHAT_EMOTE_GET:format(sender) .. pagenumber .. grabText
 		body = string.gsub(body, "<", "|cffFF7F40<")
