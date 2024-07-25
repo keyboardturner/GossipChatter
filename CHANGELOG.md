@@ -1,3 +1,7 @@
+# 0.2.3
+
+Uses proper API - should work a little better with addons like Dialogue UI
+
 # 0.2.2
 
 TOC updates for TWW
