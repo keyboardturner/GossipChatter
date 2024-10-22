@@ -1,3 +1,7 @@
+# 0.2.4
+
+11.0.5 toc update
+
 # 0.2.3
 
 Uses proper API - should work a little better with addons like Dialogue UI
