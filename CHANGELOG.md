@@ -1,3 +1,7 @@
+# 0.2.5
+
+Classic Era fix
+
 # 0.2.4
 
 11.0.5 toc update

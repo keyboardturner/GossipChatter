@@ -624,7 +624,11 @@ end)
 ------------------------------------------------------------------------------------------------------------------
 
 --final
-InterfaceOptions_AddCategory(GossipChatterPanel);
+local category, layout = Settings.RegisterCanvasLayoutCategory(GossipChatterPanel, GossipChatterPanel.name, GossipChatterPanel.name);
+category.ID = GossipChatterPanel.name;
+Settings.RegisterAddOnCategory(category)
+
+--InterfaceOptions_AddCategory(GossipChatterPanel);
 
 
 ------------------------------------------------------------------------------------------------------------------
