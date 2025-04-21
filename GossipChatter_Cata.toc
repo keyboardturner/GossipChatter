@@ -1,4 +1,4 @@
-## Interface: 40401
+## Interface: 40404
 ## Title: Gossip Chatter
 ## Notes: Prints the gossip / quest text in chat as if an NPC were speaking in /say.
 ## Author: Keyboardturn
