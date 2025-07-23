@@ -1,4 +1,4 @@
-## Interface: 40404
+## Interface: 11507
 ## Title: Gossip Chatter
 ## Notes: Prints the gossip / quest text in chat as if an NPC were speaking in /say.
 ## Author: Keyboardturn
@@ -8,4 +8,4 @@
 ## X-WoWI-ID: 26478
 ## X-Wago-ID: anKW0MGE
 
-GossipChatter_Wrath.lua
+GossipChatter_Classic.lua

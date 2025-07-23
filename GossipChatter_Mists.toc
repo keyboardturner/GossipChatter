@@ -1,0 +1,11 @@
+## Interface: 50500
+## Title: Gossip Chatter
+## Notes: Prints the gossip / quest text in chat as if an NPC were speaking in /say.
+## Author: Keyboardturn
+## Version: @project-version@
+## SavedVariables: GossipChatter_DB
+## X-Curse-Project-ID: 649496
+## X-WoWI-ID: 26478
+## X-Wago-ID: anKW0MGE
+
+GossipChatter_Mists.lua
