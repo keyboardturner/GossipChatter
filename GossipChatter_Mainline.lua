@@ -557,8 +557,27 @@ Settings.RegisterAddOnCategory(category)
 
 local function BuildBody(sender, text, chatFormat)
 	if not text or text == "" then return nil end
+
 	local body = (chatFormat and chatFormat:format(sender or "")) .. (text or "")
-	body = body:gsub("<", "|cffFF7F40<"):gsub(">", ">|r")
+
+	-- deduplicate newlines
+	body = body:gsub("\n+", "\n")
+	body = body:gsub("|n+", "\n")
+
+	-- get emote color
+	local emoteInfo = ChatTypeInfo["MONSTER_EMOTE"]
+	local emoteColor = CreateColor(emoteInfo.r, emoteInfo.g, emoteInfo.b)
+
+	-- <text in angle brackets> turn into emote-colored text
+	body = body:gsub("<(.-)>", function(inner)
+		return emoteColor:WrapTextInColorCode("<" .. inner .. ">")
+	end)
+
+	-- *text in asterisks* turn into emote-colored text (non-greedy to avoid over-matching)
+	body = body:gsub("%*(.-)%*", function(inner)
+		return emoteColor:WrapTextInColorCode("*" .. inner .. "*")
+	end)
+
 	return body
 end
 
@@ -577,7 +596,26 @@ local function HandleOutput(sender, text, chatFormat, autoTTS, useUnk)
 	local info = ChatTypeInfo[useUnk and "MONSTER_EMOTE" or "MONSTER_SAY"]
 	local ts = date(C_CVar.GetCVar("showTimestamps"))
 	if ts == "none" or ts == nil then ts = "" end
-	DEFAULT_CHAT_FRAME:AddMessage(ts .. body, info.r, info.g, info.b, info.id)
+
+	local indent = ""
+	if GossipChatter_DB then -- change to GossipChatter_DB.IndentParagraphs
+		indent = "  "
+	end
+
+	if GossipChatter_DB then -- change to GossipChatter_DB.SplitParagraphs
+		local first = true
+		for line in body:gmatch("[^\n]+") do
+			if first then
+				DEFAULT_CHAT_FRAME:AddMessage(ts .. line, info.r, info.g, info.b, info.id)
+				first = false
+			else
+				DEFAULT_CHAT_FRAME:AddMessage(indent..line, info.r, info.g, info.b, info.id)
+			end
+		end
+	else
+		-- original single-message print
+		DEFAULT_CHAT_FRAME:AddMessage(ts .. body, info.r, info.g, info.b, info.id)
+	end
 end
 
 local eventHandlers = {
