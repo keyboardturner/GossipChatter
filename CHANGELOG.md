@@ -1,3 +1,9 @@
+# 0.3.2
+
+Streamlined code better.
+
+Added an option to specifically not repeat text within the last 15 messages in chat.
+
 # 0.3.1
 
 11.2.0 toc update

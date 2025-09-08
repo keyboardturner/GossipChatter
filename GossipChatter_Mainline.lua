@@ -8,8 +8,6 @@ local defaultsTable = {
 	Format = true,
 };
 
---GossipChatter_DB
-
 local GossipTracker = CreateFrame("Frame");
 GossipTracker:RegisterEvent("GOSSIP_SHOW");
 GossipTracker:RegisterEvent("TRAINER_SHOW");
@@ -28,57 +26,59 @@ local sender = " "
 local body = ""
 local grabText = ""
 GossipTracker.textPlaying = false
+local recentDialogs = {}
+local maxDialogs = 15
 
 
 ------------------------------------------------------------------------------------------------------------------
 
-function GossipTracker.TextToSpeech(body)
-	if GossipTracker.textPlaying == true and GossipTracker.buttonPress == true then
-		C_VoiceChat.StopSpeakingText()
-		GossipTracker.buttonPress = false
-		return
-	end
-	if GossipTracker.textPlaying == true and GossipChatter_DB.Interrupt == true then
-		C_VoiceChat.StopSpeakingText()
-		return
+local function GetVoiceSettings(useUnk)
+	if useUnk then
+		return GossipChatter_DB.VoiceUnk
 	end
 
-	if GossipChatter_DB.Format == true then
-		if UnitSex("target") == 1 then
-			C_VoiceChat.SpeakText(GossipChatter_DB.VoiceThey.voiceID, body, 1, GossipChatter_DB.VoiceThey.rate, GossipChatter_DB.VoiceThey.volume)
-		elseif UnitSex("target") == 2 then
-			C_VoiceChat.SpeakText(GossipChatter_DB.VoiceHe.voiceID, body, 1, GossipChatter_DB.VoiceHe.rate, GossipChatter_DB.VoiceHe.volume)
-		elseif UnitSex("target") == 3 then
-			C_VoiceChat.SpeakText(GossipChatter_DB.VoiceShe.voiceID, body, 1, GossipChatter_DB.VoiceShe.rate, GossipChatter_DB.VoiceShe.volume)
-		else
-			C_VoiceChat.SpeakText(GossipChatter_DB.VoiceUnk.voiceID, body, 1, GossipChatter_DB.VoiceUnk.rate, GossipChatter_DB.VoiceUnk.volume)
-		end
+	local sex = UnitSex("target")
+	if sex == 1 then
+		return GossipChatter_DB.VoiceThey
+	elseif sex == 2 then
+		return GossipChatter_DB.VoiceHe
+	elseif sex == 3 then
+		return GossipChatter_DB.VoiceShe
 	else
-		if UnitSex("target") == 1 then
-			C_VoiceChat.SpeakText(GossipChatter_DB.VoiceThey.voiceID, grabText, 1, GossipChatter_DB.VoiceThey.rate, GossipChatter_DB.VoiceThey.volume)
-		elseif UnitSex("target") == 2 then
-			C_VoiceChat.SpeakText(GossipChatter_DB.VoiceHe.voiceID, grabText, 1, GossipChatter_DB.VoiceHe.rate, GossipChatter_DB.VoiceHe.volume)
-		elseif UnitSex("target") == 3 then
-			C_VoiceChat.SpeakText(GossipChatter_DB.VoiceShe.voiceID, grabText, 1, GossipChatter_DB.VoiceShe.rate, GossipChatter_DB.VoiceShe.volume)
-		else
-			C_VoiceChat.SpeakText(GossipChatter_DB.VoiceUnk.voiceID, grabText, 1, GossipChatter_DB.VoiceUnk.rate, GossipChatter_DB.VoiceUnk.volume)
-		end
+		return GossipChatter_DB.VoiceUnk
 	end
 end
 
-function GossipTracker.TextToSpeechUnk(body)
-	if GossipTracker.textPlaying == true and GossipTracker.buttonPress == true  then
-		C_VoiceChat.StopSpeakingText()
-		return
+function GossipTracker:Speak(text, useUnk)
+	-- handle interruptions
+	if self.textPlaying then
+		if self.buttonPress or GossipChatter_DB.Interrupt then
+			C_VoiceChat.StopSpeakingText()
+			self.buttonPress = false
+			return
+		end
 	end
-	if GossipTracker.textPlaying == true and GossipChatter_DB.Interrupt == true  then
-		C_VoiceChat.StopSpeakingText()
-		return
+
+	-- pick text body or grabText depending on format
+	local msg = GossipChatter_DB.Format and text or grabText
+	local settings = GetVoiceSettings(useUnk)
+
+	C_VoiceChat.SpeakText(settings.voiceID, msg, 1, settings.rate, settings.volume)
+end
+
+local function IsDuplicateDialog(text)
+	for _, v in ipairs(recentDialogs) do
+		if v == text then
+			return true
+		end
 	end
-	if GossipChatter_DB.Format == true then
-		C_VoiceChat.SpeakText(GossipChatter_DB.VoiceUnk.voiceID, body, 1, GossipChatter_DB.VoiceUnk.rate, GossipChatter_DB.VoiceUnk.volume)
-	else
-		C_VoiceChat.SpeakText(GossipChatter_DB.VoiceUnk.voiceID, grabText, 1, GossipChatter_DB.VoiceUnk.rate, GossipChatter_DB.VoiceUnk.volume)
+	return false
+end
+
+local function AddRecentDialog(text)
+	table.insert(recentDialogs, text)
+	if #recentDialogs > maxDialogs then
+		table.remove(recentDialogs, 1) -- remove oldest
 	end
 end
 
@@ -101,7 +101,7 @@ GossipTracker.button:SetScript("OnMouseDown", function()
 	GossipTracker.button.tex:SetTexCoord(-.08, 1.16, -.16, 1.08)
 end)
 GossipTracker.button:SetScript("OnMouseUp", function()
-	GossipTracker.TextToSpeech(body)
+	GossipTracker:Speak(body, false)
 	GossipTracker.buttonPress = true
 	GossipTracker.button.tex:SetTexCoord(-.08, 1.08, -.08, 1.08)
 end)
@@ -125,7 +125,7 @@ GossipTracker.button2:SetScript("OnMouseDown", function()
 	GossipTracker.button2.tex:SetTexCoord(-.08, 1.16, -.16, 1.08)
 end)
 GossipTracker.button2:SetScript("OnMouseUp", function()
-	GossipTracker.TextToSpeech(body)
+	GossipTracker:Speak(body, false)
 	GossipTracker.buttonPress = true
 	GossipTracker.button2.tex:SetTexCoord(-.08, 1.08, -.08, 1.08)
 end)
@@ -143,87 +143,14 @@ GossipTracker.button3:SetPushedAtlas("chatframe-button-down")
 GossipTracker.button3:SetHighlightAtlas("chatframe-button-highlight")
 
 GossipTracker.button3:SetScript("OnMouseDown", function()
-	--if GossipChatter_DB.TTSButton.locked == true  then
-		GossipTracker.button3.tex:SetTexCoord(-.08, 1.16, -.16, 1.08)
-	--end
+	GossipTracker.button3.tex:SetTexCoord(-.08, 1.16, -.16, 1.08)
 end)
 GossipTracker.button3:SetScript("OnMouseUp", function()
-	--if GossipChatter_DB.TTSButton.locked == true then
-		GossipTracker.TextToSpeechUnk(body)
+	GossipTracker:Speak(body, true)
 	GossipTracker.buttonPress = true
-		GossipTracker.button3.tex:SetTexCoord(-.08, 1.08, -.08, 1.08)
-	--end
+	GossipTracker.button3.tex:SetTexCoord(-.08, 1.08, -.08, 1.08)
 end)
 
-
-------------------------------------------------------------------------------------------------------------------
---[[
-
-function GossipTracker.Stuff(frame,button)
-	print("bingus")
-		frame:SetMovable(true);
-		frame:SetUserPlaced(true);
-		frame:EnableMouse(true)
-		frame:RegisterForDrag("RightButton");
-		frame:SetClampedToScreen(true)
-
-		frame:SetScript("OnDragStart", function(self, button)
-			if button == "RightButton" then
-				if GossipChatter_DB.TTSButton.locked == false then
-						Mixin(self, BackdropTemplateMixin);
-						frame:SetBackdrop({bgFile = "Interface/Tooltips/UI-Tooltip-Background", insets = { left = -1, right = -1, top = -1, bottom = -1 }});
-						frame:SetBackdropColor(1,.71,.75,.5);
-						self:StartMoving();
-						print("OnDragStart", button)
-						self.isMoving = true;
-				end
-			end
-		end);
-		frame:SetScript("OnDragStop", function(self, button)
-			Mixin(self, BackdropTemplateMixin);
-			frame:SetBackdropColor(0,0,0,0);
-			self:StopMovingOrSizing();
-			print("OnDragStop")
-			self.isMoving = false;
-			local point, relativeTo, relativePoint, xOfs, yOfs = frame:GetPoint();
-
-			GossipChatter_DB.TTSButton.point = point
-			GossipChatter_DB.TTSButton.relativePoint = relativePoint
-			GossipChatter_DB.TTSButton.x = xOfs
-			GossipChatter_DB.TTSButton.y = yOfs
-
-			print(GossipTracker.button3:GetBottom())
-		end);
-end
-
-function GossipTracker.ReStuff()
-	GossipTracker.button:ClearAllPoints()
-	GossipTracker.button:SetPoint(GossipChatter_DB.TTSButton.point, QuestFrame.TitleContainer, GossipChatter_DB.TTSButton.relativePoint, GossipChatter_DB.TTSButton.x, GossipChatter_DB.TTSButton.y);
-	GossipTracker.button:SetScale(GossipChatter_DB.TTSButton.scale);
-	GossipTracker.button2:SetPoint(GossipChatter_DB.TTSButton.point, GossipFrame.TitleContainer, GossipChatter_DB.TTSButton.relativePoint, GossipChatter_DB.TTSButton.x, GossipChatter_DB.TTSButton.y);
-	GossipTracker.button2:SetScale(GossipChatter_DB.TTSButton.scale);
-	GossipTracker.button3:SetPoint(GossipChatter_DB.TTSButton.point, ItemTextFrame.TitleContainer, GossipChatter_DB.TTSButton.relativePoint, GossipChatter_DB.TTSButton.x, GossipChatter_DB.TTSButton.y);
-	GossipTracker.button3:SetScale(GossipChatter_DB.TTSButton.scale);
-end
-
-function GossipTrackerResetStuff()
-	GossipTracker.button:ClearAllPoints()
-	GossipTracker.button2:ClearAllPoints()
-	GossipTracker.button3:ClearAllPoints()
-
-
-	GossipChatter_DB.TTSButton.x = defaultsTable.TTSButton.x
-	GossipChatter_DB.TTSButton.y = defaultsTable.TTSButton.y
-	GossipChatter_DB.TTSButton.scale = defaultsTable.TTSButton.scale
-
-	GossipTracker.button:SetPoint("CENTER", QuestFrame.TitleContainer, "RIGHT", defaultsTable.TTSButton.x, defaultsTable.TTSButton.y);
-	GossipTracker.button:SetScale(defaultsTable.TTSButton.scale);
-	GossipTracker.button2:SetPoint("CENTER", GossipFrame.TitleContainer, "RIGHT", defaultsTable.TTSButton.x, defaultsTable.TTSButton.y);
-	GossipTracker.button2:SetScale(defaultsTable.TTSButton.scale);
-	GossipTracker.button3:SetPoint("CENTER", ItemTextFrame.TitleContainer, "RIGHT", defaultsTable.TTSButton.x, defaultsTable.TTSButton.y);
-	GossipTracker.button3:SetScale(defaultsTable.TTSButton.scale);
-end
-]]
 
 ------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------
@@ -615,12 +542,6 @@ end)
 
 ------------------------------------------------------------------------------------------------------------------
 
---voice types
---1. neutrum
---2. male
---3. female
---4. unknown
-
 ------------------------------------------------------------------------------------------------------------------
 
 --final
@@ -633,6 +554,55 @@ Settings.RegisterAddOnCategory(category)
 
 ------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------
+
+local function BuildBody(sender, text, chatFormat)
+	if not text or text == "" then return nil end
+	local body = (chatFormat and chatFormat:format(sender or "")) .. (text or "")
+	body = body:gsub("<", "|cffFF7F40<"):gsub(">", ">|r")
+	return body
+end
+
+local function HandleOutput(sender, text, chatFormat, autoTTS, useUnk)
+	local body = BuildBody(sender, text, chatFormat)
+	if not body then return end
+
+	-- deduplication - skip if body was printed recently
+	if IsDuplicateDialog(body) then return end
+	AddRecentDialog(body)
+
+	if autoTTS then
+		GossipTracker:Speak(GossipChatter_DB.Format and body or text, useUnk)
+	end
+
+	local info = ChatTypeInfo[useUnk and "MONSTER_EMOTE" or "MONSTER_SAY"]
+	local ts = date(C_CVar.GetCVar("showTimestamps"))
+	if ts == "none" or ts == nil then ts = "" end
+	DEFAULT_CHAT_FRAME:AddMessage(ts .. body, info.r, info.g, info.b, info.id)
+end
+
+local eventHandlers = {
+	GOSSIP_SHOW = function()
+		return C_GossipInfo.GetText(), UnitName("npc") or GossipFrameTitleText:GetText() or UnitName("questnpc") or UnitName("target"), CHAT_SAY_GET
+	end,
+	QUEST_GREETING = function()
+		return GetGreetingText(), UnitName("npc") or UnitName("questnpc"), CHAT_SAY_GET
+	end,
+	QUEST_PROGRESS = function()
+		return GetProgressText(), UnitName("npc") or UnitName("questnpc"), CHAT_SAY_GET
+	end,
+	QUEST_COMPLETE = function()
+		return GetRewardText(), UnitName("npc") or UnitName("questnpc"), CHAT_SAY_GET
+	end,
+	QUEST_DETAIL = function()
+		return GetQuestText(), UnitName("npc") or UnitName("questnpc"), CHAT_SAY_GET
+	end,
+	ITEM_TEXT_READY = function()
+		local text = ItemTextGetText()
+		local sender = UnitName("npc") or ItemTextFrameTitleText:GetText() or UnitName("questnpc")
+		local page = ItemTextCurrentPage and ItemTextCurrentPage:GetText() or ""
+		return text and (page .. ": " .. text) or nil, sender, CHAT_EMOTE_GET, true
+	end,
+}
 
 
 function GossipTracker:OnEvent(event,arg1)
@@ -647,156 +617,13 @@ function GossipTracker:OnEvent(event,arg1)
 	else
 		pagenumber = ": "
 	end
-
 	if event == "VOICE_CHAT_TTS_PLAYBACK_STARTED" then
-		GossipTracker.textPlaying = true
-	end
-
-	if event == "VOICE_CHAT_TTS_PLAYBACK_FINISHED" then
-		GossipTracker.textPlaying = false
-		GossipTracker.buttonPress = false
-	end
-
-	if event == "GOSSIP_SHOW"  then
-		if C_GossipInfo.GetText() == nil then
-			return
-		end
-		if C_GossipInfo.GetText() then
-			grabText = C_GossipInfo.GetText()
-		else
-			grabText = ""
-		end
-		sender = UnitName("npc") or GossipFrameTitleText:GetText() or UnitName("questnpc") or UnitName("target")
-		if CHAT_SAY_GET:format(sender) then
-			body = CHAT_SAY_GET:format(sender) .. grabText
-		else
-			body = "" .. grabText
-		end
-		body = string.gsub(body, "<", "|cffFF7F40<")
-		body = string.gsub(body, ">", ">|r")
-		if C_GossipInfo.GetText() == nil then
-			return
-		else
-			if GossipChatter_DB.TTSButton.auto == true then
-				if GossipChatter_DB.Format == true then
-					GossipTracker.TextToSpeech(body)
-				else
-					GossipTracker.TextToSpeech(grabText)
-				end
-			end
-			DEFAULT_CHAT_FRAME:AddMessage(timeStamps .. body, info.r, info.g, info.b, info.id)
-		end
-
-	end
-	if event == "QUEST_GREETING" then
-		if GetGreetingText() == nil then
-			return
-		end
-
-		--GetQuestText() ?
-		grabText = GetGreetingText()
-		sender = UnitName("npc") or UnitName("questnpc")
-		body = CHAT_SAY_GET:format(sender) .. grabText
-		body = string.gsub(body, "<", "|cffFF7F40<")
-		body = string.gsub(body, ">", ">|r")
-
-		if GossipChatter_DB.TTSButton.auto == true then
-			if GossipChatter_DB.Format == true then
-				GossipTracker.TextToSpeech(body)
-			else
-				GossipTracker.TextToSpeech(grabText)
-			end
-		end
-		DEFAULT_CHAT_FRAME:AddMessage(timeStamps .. body, info.r, info.g, info.b, info.id)
-	end
-	if event == "QUEST_PROGRESS" then
-		if GetProgressText() == nil then
-			return
-		end
-
-		--GetProgressText() ?
-		grabText = GetProgressText()
-		sender = UnitName("npc") or UnitName("questnpc")
-		body = CHAT_SAY_GET:format(sender) .. grabText
-		body = string.gsub(body, "<", "|cffFF7F40<")
-		body = string.gsub(body, ">", ">|r")
-
-		if GossipChatter_DB.TTSButton.auto == true then
-			if GossipChatter_DB.Format == true then
-				GossipTracker.TextToSpeech(body)
-			else
-				GossipTracker.TextToSpeech(grabText)
-			end
-		end
-		DEFAULT_CHAT_FRAME:AddMessage(timeStamps .. body, info.r, info.g, info.b, info.id)
-	end
-	if event == "QUEST_COMPLETE" then
-		if GetRewardText() == nil then
-			return
-		end
-
-		-- GetRewardText() ?
-		grabText = GetRewardText()
-		sender = UnitName("npc") or UnitName("questnpc")
-		body = CHAT_SAY_GET:format(sender) .. grabText
-		body = string.gsub(body, "<", "|cffFF7F40<")
-		body = string.gsub(body, ">", ">|r")
-
-		if GossipChatter_DB.TTSButton.auto == true then
-			if GossipChatter_DB.Format == true then
-				GossipTracker.TextToSpeech(body)
-			else
-				GossipTracker.TextToSpeech(grabText)
-			end
-		end
-		DEFAULT_CHAT_FRAME:AddMessage(timeStamps .. body, info.r, info.g, info.b, info.id)
-	end
-	if event == "QUEST_DETAIL" then
-		if GetQuestText() == nil then
-			return
-		end
-
-		--GetGreetingText() ?
-		grabText = GetQuestText()
-		sender = UnitName("npc") or UnitName("questnpc")
-		body = CHAT_SAY_GET:format(sender) .. grabText
-		body = string.gsub(body, "<", "|cffFF7F40<")
-		body = string.gsub(body, ">", ">|r")
-
-		if GossipChatter_DB.TTSButton.auto == true then
-			if GossipChatter_DB.Format == true then
-				GossipTracker.TextToSpeech(body)
-			else
-				GossipTracker.TextToSpeech(grabText)
-			end
-		end
-		DEFAULT_CHAT_FRAME:AddMessage(timeStamps .. body, info.r, info.g, info.b, info.id)
-	end
-	if event == "ITEM_TEXT_READY" then	
-		if ItemTextGetText() == nil then
-			return
-		end
-		local info = ChatTypeInfo["MONSTER_EMOTE"]
-		grabText = ItemTextGetText()
-		sender = UnitName("npc") or ItemTextFrameTitleText:GetText() or UnitName("questnpc")
-
-		body = CHAT_EMOTE_GET:format(sender) .. pagenumber .. grabText
-		body = string.gsub(body, "<", "|cffFF7F40<")
-		body = string.gsub(body, ">", ">|r")
-		if string.find(body, "<HTML>") then
-			return
-		end
-		
-		if GossipChatter_DB.TTSButton.auto == true then
-			if GossipChatter_DB.Format == true then
-				GossipTracker.TextToSpeechUnk(body)
-			else
-				GossipTracker.TextToSpeechUnk(grabText)
-			end
-		end
-		DEFAULT_CHAT_FRAME:AddMessage(timeStamps .. body, info.r, info.g, info.b, info.id)
-	end
-	if event == "ADDON_LOADED" and arg1 == "GossipChatter" then
+		self.textPlaying = true
+		return
+	elseif event == "VOICE_CHAT_TTS_PLAYBACK_FINISHED" then
+		self.textPlaying, self.buttonPress = false, false
+		return
+	elseif event == "ADDON_LOADED" and arg1 == "GossipChatter" then
 		if not GossipChatter_DB then
 			GossipChatter_DB = defaultsTable;
 		end
@@ -911,6 +738,14 @@ function GossipTracker:OnEvent(event,arg1)
 		UIDropDownMenu_SetText(GossipChatterPanel.dropDownHe, "Voice - He/Him: " .. GossipChatter_DB.VoiceHe.voiceID)
 		UIDropDownMenu_SetText(GossipChatterPanel.dropDownShe, "Voice - She/Her: " .. GossipChatter_DB.VoiceShe.voiceID)
 		UIDropDownMenu_SetText(GossipChatterPanel.dropDownUnk, "Voice - Item: " .. GossipChatter_DB.VoiceUnk.voiceID)
+	end
+
+	local handler = eventHandlers[event]
+	if handler then
+		local text, sender, chatFmt, useUnk = handler()
+		if not text then return end
+		grabText, body = text, text
+		HandleOutput(sender, text, chatFmt, GossipChatter_DB.TTSButton.auto, useUnk)
 	end
 
 end
