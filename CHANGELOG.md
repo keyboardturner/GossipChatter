@@ -1,8 +1,12 @@
-# 0.3.2
+# 1.0.0
 
 Streamlined code better.
 
-Added an option to specifically not repeat text within the last 15 messages in chat.
+Reworked gosisp messages to not repeat text within the last 15 messages in chat.
+
+Added an option to split paragraphs into separate messages in chat.
+
+Reworked some functionalities, such as format NPC name and Interrupt Text To Speech. Interrupt Text To Speech will now automatically stop all text to speech when a window is closed, regardless of the Auto-play Text To Speech option.
 
 # 0.3.1
 
