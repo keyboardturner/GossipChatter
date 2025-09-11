@@ -8,6 +8,12 @@ Added an option to split paragraphs into separate messages in chat.
 
 Reworked some functionalities, such as format NPC name and Interrupt Text To Speech. Interrupt Text To Speech will now automatically stop all text to speech when a window is closed, regardless of the Auto-play Text To Speech option.
 
+Classic Era / Mists versions of the addon have been merged into using the Retail code.
+
+A new option to select the chat frame output has been added.
+
+All text in settings is now localized  (to the best of my ability)
+
 # 0.3.1
 
 11.2.0 toc update

@@ -1,10 +1,14 @@
+local _, gc = ...
+local L = gc.L
+
 local defaultsTable = {
 	SplitParagraphs = true,
 	Indent = false,
 	TTSButton = {locked = true, show = true, scale = 1, x = -35, y = 0, point = "CENTER", relativePoint = "RIGHT",},
 	AutoTTS = false,
 	Interrupt = true,
-	Format = true,
+	Format = false,
+    ChatFrame = 1,
 	VoiceThey = {show = true, voiceID = 1, rate = 0, volume = 100,},
 	VoiceHe = {show = true, voiceID = 2, rate = 0, volume = 100,},
 	VoiceShe = {show = true, voiceID = 1, rate = 0, volume = 100,},
@@ -106,72 +110,94 @@ end
 
 ------------------------------------------------------------------------------------------------------------------
 
-GossipTracker.button = CreateFrame("Button", nil, QuestFrame.TitleContainer)
-GossipTracker.button:SetPoint("CENTER", QuestFrame.TitleContainer, "RIGHT", -35, 0)
-GossipTracker.button:SetWidth(24)
-GossipTracker.button:SetHeight(24)
-GossipTracker.button.tex = GossipTracker.button:CreateTexture(nil, "ARTWORK", nil, 1)
-GossipTracker.button.tex:SetAllPoints(GossipTracker.button)
-GossipTracker.button.tex:SetAtlas("chatframe-button-icon-TTS")
-GossipTracker.button.tex:SetTexCoord(-.08, 1.08, -.08, 1.08)
-GossipTracker.button:SetNormalAtlas("chatframe-button-up")
-GossipTracker.button:SetPushedAtlas("chatframe-button-down")
-GossipTracker.button:SetHighlightAtlas("chatframe-button-highlight")
+local BUTTON_SIZE = 24
+local OFFSET_X, OFFSET_Y = -15, 0
+
+GossipTracker.ttsButtonLocked = true
+GossipTracker.ttsButtonParentFrames = { QuestFrame.TitleContainer or QuestNpcNameFrame, GossipFrame.TitleContainer, ItemTextFrame.TitleContainer or ItemTextFrame }
+
+--local function LockUnlockMenuGenerator(owner, rootDescription)
+--	local label = GossipTracker.ttsButtonLocked and "Unlock TTS Button" or "Lock TTS Button"
+--	rootDescription:CreateButton(label, function()
+--		GossipTracker.ttsButtonLocked = not GossipTracker.ttsButtonLocked
+--		--print("TTS Button " .. (GossipTracker.ttsButtonLocked and "locked" or "unlocked"))
+--	end)
+--end
+
+local function CreateTTSButton(parentFrame, isItemText)
+	if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then -- classic era
+		if parentFrame == GossipFrame.TitleContainer then
+			parentFrame = GossipFrame
+		end
+	end
+	local button = CreateFrame("Button", nil, parentFrame)
+	button:SetSize(BUTTON_SIZE, BUTTON_SIZE)
+	if parentFrame == QuestNpcNameFrame then -- classic era
+		OFFSET_X = -25
+	end
+	if parentFrame == ItemTextFrame then -- classic era
+		OFFSET_X = -15*4.5
+		OFFSET_Y = -25
+		button:SetPoint("CENTER", parentFrame, "TOPRIGHT", OFFSET_X, OFFSET_Y)
+	elseif parentFrame == GossipFrame then -- classic era
+		OFFSET_X = -15*4.5
+		OFFSET_Y = -30
+		button:SetPoint("CENTER", parentFrame, "TOPRIGHT", OFFSET_X, OFFSET_Y)
+	else
+		button:SetPoint("CENTER", parentFrame, "RIGHT", OFFSET_X, OFFSET_Y)
+	end
+	--button:SetClampedToScreen(true)
+
+	button.tex = button:CreateTexture(nil, "ARTWORK", nil, 1)
+	button.tex:SetAllPoints(button)
+	button.tex:SetAtlas("chatframe-button-icon-TTS")
+	button.tex:SetTexCoord(-.08, 1.08, -.08, 1.08)
+
+	button:SetNormalAtlas("chatframe-button-up")
+	button:SetPushedAtlas("chatframe-button-down")
+	button:SetHighlightAtlas("chatframe-button-highlight")
+
+	button:SetScript("OnMouseDown", function(self)
+		self.tex:SetTexCoord(-.08, 1.16, -.16, 1.08)
+	end)
+
+	button:SetScript("OnMouseUp", function(self, buttonClicked)
+		self.tex:SetTexCoord(-.08, 1.08, -.08, 1.08)
+
+		--if buttonClicked == "RightButton" then
+		--	-- show lock/unlock menu
+		--	MenuUtil.CreateContextMenu(self, LockUnlockMenuGenerator)
+		--	return
+		--end
+
+		-- only speak if locked
+		--if GossipTracker.ttsButtonLocked then
+			GossipTracker:Speak(bodyTTS, isItemText)
+			GossipTracker.buttonPress = true
+		--end
+	end)
+
+	button:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_TOP")
+		GameTooltip:AddLine(L["ButtonSpeechTT"])
+		GameTooltip:Show()
+	end)
+
+	button:SetScript("OnLeave", function()
+		GameTooltip:Hide()
+	end)
+
+	return button
+end
+
+-- create buttons for all frames
+GossipTracker.ttsButtons = {}
+for _, frame in ipairs(GossipTracker.ttsButtonParentFrames) do
+	local isItemText = (frame == ItemTextFrame.TitleContainer or frame == ItemTextFrame)
+	table.insert(GossipTracker.ttsButtons, CreateTTSButton(frame, isItemText))
+end
 
 
-GossipTracker.button:SetScript("OnMouseDown", function()
-	GossipTracker.button.tex:SetTexCoord(-.08, 1.16, -.16, 1.08)
-end)
-GossipTracker.button:SetScript("OnMouseUp", function()
-	GossipTracker:Speak(bodyTTS, false)
-	GossipTracker.buttonPress = true
-	GossipTracker.button.tex:SetTexCoord(-.08, 1.08, -.08, 1.08)
-end)
-
-------------------------------------------------------------------------------------------------------------------
-
-GossipTracker.button2 = CreateFrame("Button", nil, GossipFrame.TitleContainer)
-GossipTracker.button2:SetPoint("CENTER", GossipFrame.TitleContainer, "RIGHT", -35, 0)
-GossipTracker.button2:SetWidth(24)
-GossipTracker.button2:SetHeight(24)
-GossipTracker.button2.tex = GossipTracker.button2:CreateTexture(nil, "ARTWORK", nil, 1)
-GossipTracker.button2.tex:SetAllPoints(GossipTracker.button2)
-GossipTracker.button2.tex:SetAtlas("chatframe-button-icon-TTS")
-GossipTracker.button2.tex:SetTexCoord(-.08, 1.08, -.08, 1.08)
-GossipTracker.button2:SetNormalAtlas("chatframe-button-up")
-GossipTracker.button2:SetPushedAtlas("chatframe-button-down")
-GossipTracker.button2:SetHighlightAtlas("chatframe-button-highlight")
-
-
-GossipTracker.button2:SetScript("OnMouseDown", function()
-	GossipTracker.button2.tex:SetTexCoord(-.08, 1.16, -.16, 1.08)
-end)
-GossipTracker.button2:SetScript("OnMouseUp", function()
-	GossipTracker:Speak(bodyTTS, false)
-	GossipTracker.buttonPress = true
-	GossipTracker.button2.tex:SetTexCoord(-.08, 1.08, -.08, 1.08)
-end)
-
-GossipTracker.button3 = CreateFrame("Button", nil, ItemTextFrame.TitleContainer)
-GossipTracker.button3:SetPoint("CENTER", ItemTextFrame.TitleContainer, "RIGHT", -35, 0)
-GossipTracker.button3:SetWidth(24)
-GossipTracker.button3:SetHeight(24)
-GossipTracker.button3.tex = GossipTracker.button3:CreateTexture(nil, "ARTWORK", nil, 1)
-GossipTracker.button3.tex:SetAllPoints(GossipTracker.button3)
-GossipTracker.button3.tex:SetAtlas("chatframe-button-icon-TTS")
-GossipTracker.button3.tex:SetTexCoord(-.08, 1.08, -.08, 1.08)
-GossipTracker.button3:SetNormalAtlas("chatframe-button-up")
-GossipTracker.button3:SetPushedAtlas("chatframe-button-down")
-GossipTracker.button3:SetHighlightAtlas("chatframe-button-highlight")
-
-GossipTracker.button3:SetScript("OnMouseDown", function()
-	GossipTracker.button3.tex:SetTexCoord(-.08, 1.16, -.16, 1.08)
-end)
-GossipTracker.button3:SetScript("OnMouseUp", function()
-	GossipTracker:Speak(bodyTTS, true)
-	GossipTracker.buttonPress = true
-	GossipTracker.button3.tex:SetTexCoord(-.08, 1.08, -.08, 1.08)
-end)
 
 
 ------------------------------------------------------------------------------------------------------------------
@@ -199,32 +225,56 @@ local function RegisterGossipChatterSettings()
 		return setting
 	end
 
-	-- === General ===
-	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("General"))
+	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L["Setting_General"]))
 
 	do
-		local setting = RegisterSetting("AutoTTS", GossipChatter_DB.TTSButton.auto or false, "Auto-play Text To Speech")
-		CreateCheckbox(category, setting, "Automatically play NPC text with Text to Speech.")
+		local setting = RegisterSetting("SplitParagraphs", GossipChatter_DB.SplitParagraphs or false, L["Setting_SplitParagraphs"])
+		CreateCheckbox(category, setting, L["Setting_SplitParagraphsTT"])
 	end
 	do
-		local setting = RegisterSetting("ShowButton", GossipChatter_DB.TTSButton.show or true, "Show Button on Frame")
-		CreateCheckbox(category, setting, "Show the TTS button on Gossip/Quest/Item frames.")
-	end
-	do
-		local setting = RegisterSetting("Interrupt", GossipChatter_DB.Interrupt or false, "Interrupt Text To Speech")
-		CreateCheckbox(category, setting, "Interrupt Text To Speech if you close a gossip or quest frame.")
-	end
-	do
-		local setting = RegisterSetting("Format", GossipChatter_DB.Format or true, "Format NPC Name")
-		CreateCheckbox(category, setting, "Prefix Text To Speech chat messages with the NPC’s name.")
-	end
-	do
-		local setting = RegisterSetting("SplitParagraphs", GossipChatter_DB.SplitParagraphs or false, "Split paragraphs into separate messages")
-		CreateCheckbox(category, setting, "Print each paragraph as its own chat message instead of a single block.")
+		local setting = RegisterSetting("Indent", GossipChatter_DB.Indent or false, L["Setting_IndentParagraphs"])
+		CreateCheckbox(category, setting, L["Setting_IndentParagraphsTT"])
 	end
 
-	-- === Voices ===
-	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Voice Settings"))
+	do
+	    local setting = Settings.RegisterAddOnSetting(category, "GC_ChatFrame", "ChatFrame", GossipChatter_DB, "number", L["Setting_OutputChatFrame"], 1)
+	    setting:SetValue(GossipChatter_DB.ChatFrame or 1)
+
+	    local function GetOptions()
+	        local container = Settings.CreateControlTextContainer()
+	        for i = 1, NUM_CHAT_WINDOWS do
+	            local name = GetChatWindowInfo(i)
+	            if name and name ~= "" then
+	                container:Add(i, name)
+	            else
+	                container:Add(i, "ChatFrame " .. i)
+	            end
+	        end
+	        return container:GetData()
+	    end
+	    CreateDropdown(category, setting, GetOptions, L["Setting_OutputChatFrameTT"])
+	end
+
+	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L["Setting_TextToSpeech"]))
+	do
+		local setting = RegisterSetting("ShowButton", GossipChatter_DB.TTSButton.show or true, L["Setting_ShowButton"])
+		CreateCheckbox(category, setting, L["Setting_ShowButtonTT"])
+	end
+	do
+		local setting = RegisterSetting("AutoTTS", GossipChatter_DB.TTSButton.auto or false, L["Setting_AutoplayTTS"])
+		CreateCheckbox(category, setting, L["Setting_AutoplayTTSTT"])
+	end
+	do
+		local setting = RegisterSetting("Interrupt", GossipChatter_DB.Interrupt or false, L["Setting_InterruptTTS"])
+		CreateCheckbox(category, setting, L["Setting_InterruptTTSTT"])
+	end
+	do
+		local setting = RegisterSetting("Format", GossipChatter_DB.Format or false, L["Setting_FormatName"])
+		CreateCheckbox(category, setting, L["Setting_FormatNameTT"])
+	end
+
+
+	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L["Setting_VoiceOptions"]))
 
 	local function AddVoiceControls(voiceKey, displayName)
 		-- rate slider
@@ -232,7 +282,7 @@ local function RegisterGossipChatterSettings()
 			local variable = voiceKey
 			local subKey = "rate"
 			local default = 0
-			local setting = RegisterSetting(variable, default, displayName .. " Rate", subKey)
+			local setting = RegisterSetting(variable, default, displayName .. " "..L["Setting_Voice_Rate"], subKey)
 			local opts = Settings.CreateSliderOptions(-10, 10, 1)
 			opts:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right)
 			Settings.CreateSlider(category, setting, opts, "Adjust speech rate for " .. displayName)
@@ -243,7 +293,7 @@ local function RegisterGossipChatterSettings()
 			local variable = voiceKey
 			local subKey = "volume"
 			local default = 100
-			local setting = RegisterSetting(variable, default, displayName .. " Volume", subKey)
+			local setting = RegisterSetting(variable, default, displayName .. " "..L["Setting_Voice_Volume"], subKey)
 			local opts = Settings.CreateSliderOptions(0, 100, 1)
 			opts:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right)
 			Settings.CreateSlider(category, setting, opts, "Adjust volume for " .. displayName)
@@ -254,7 +304,7 @@ local function RegisterGossipChatterSettings()
 			local variable = voiceKey
 			local subKey = "voiceID"
 			local default = 1
-			local setting = RegisterSetting(variable, default, displayName .. " Voice", subKey)
+			local setting = RegisterSetting(variable, default, displayName .. " "..L["Setting_Voice_VoiceID"], subKey)
 			local function GetOptions()
 				local container = Settings.CreateControlTextContainer()
 				for _, v in ipairs(C_VoiceChat.GetTtsVoices()) do
@@ -262,7 +312,7 @@ local function RegisterGossipChatterSettings()
 				end
 				return container:GetData()
 			end
-			CreateDropdown(category, setting, GetOptions, "Choose the TTS voice for " .. displayName)
+			CreateDropdown(category, setting, GetOptions, string.format(L["Setting_Voice_DropdownTT"], displayName))
 		end
 
 		-- test button
@@ -273,7 +323,7 @@ local function RegisterGossipChatterSettings()
 				local volume  = GossipChatter_DB[voiceKey].volume or 100
 				C_VoiceChat.SpeakText(voiceID, TEXT_TO_SPEECH_SAMPLE_TEXT, 1, rate, volume)
 			end
-			local initializer = CreateSettingsButtonInitializer("Play Sample: " .. displayName, TEXT_TO_SPEECH_PLAY_SAMPLE, OnButtonClick, "Hear an example of this voice with current settings.", true)
+			local initializer = CreateSettingsButtonInitializer(string.format(L["Setting_Voice_PlaySample"], displayName), TEXT_TO_SPEECH_PLAY_SAMPLE, OnButtonClick, L["Setting_Voice_PlaySampleTT"], true)
 			layout:AddInitializer(initializer)
 		end
 	end
@@ -282,6 +332,9 @@ local function RegisterGossipChatterSettings()
 	AddVoiceControls("VoiceHe",   "He/Him")
 	AddVoiceControls("VoiceShe",  "She/Her")
 	AddVoiceControls("VoiceUnk",  "Item/Unknown")
+
+
+	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("|Tinterface\\chatframe\\ui-chaticon-blizz:12:20|t" .. TEXT_TO_SPEECH_MORE_VOICES))
 
 	Settings.RegisterAddOnCategory(category)
 end
@@ -317,41 +370,40 @@ local function BuildBody(sender, text, chatFormat)
 end
 
 local function HandleOutput(sender, text, chatFormat, autoTTS, useUnk)
-	local body = BuildBody(sender, text, chatFormat)
-	if not body then return end
+    local body = BuildBody(sender, text, chatFormat)
+    if not body then return end
 
-	-- deduplication - skip if body was printed recently
-	if IsDuplicateDialog(body) then return end
-	AddRecentDialog(body)
+    if IsDuplicateDialog(body) then return end
+    AddRecentDialog(body)
 
-	if autoTTS then
-		GossipTracker:Speak(text or bodyTTS, useUnk)
-	end
+    if autoTTS then
+        GossipTracker:Speak(text or bodyTTS, useUnk)
+    end
 
-	local info = ChatTypeInfo[useUnk and "MONSTER_EMOTE" or "MONSTER_SAY"]
-	local ts = date(C_CVar.GetCVar("showTimestamps"))
-	if ts == "none" or ts == nil then ts = "" end
+    local info = ChatTypeInfo[useUnk and "MONSTER_EMOTE" or "MONSTER_SAY"]
+    local ts = date(C_CVar.GetCVar("showTimestamps"))
+    if ts == "none" or ts == nil then ts = "" end
 
-	local indent = ""
-	if GossipChatter_DB.IndentParagraphs then
-		indent = "  "
-	end
+    local indent = GossipChatter_DB.Indent and "  " or ""
 
-	if GossipChatter_DB.SplitParagraphs then
-		local first = true
-		for line in body:gmatch("[^\n]+") do
-			if first then
-				DEFAULT_CHAT_FRAME:AddMessage(ts .. line, info.r, info.g, info.b, info.id)
-				first = false
-			else
-				DEFAULT_CHAT_FRAME:AddMessage(indent..line, info.r, info.g, info.b, info.id)
-			end
-		end
-	else
-		-- original single-message print
-		DEFAULT_CHAT_FRAME:AddMessage(ts .. body, info.r, info.g, info.b, info.id)
-	end
+    -- pick selected chat frame
+    local frame = _G["ChatFrame"..(GossipChatter_DB.ChatFrame or 1)] or DEFAULT_CHAT_FRAME
+
+    if GossipChatter_DB.SplitParagraphs then
+        local first = true
+        for line in body:gmatch("[^\n]+") do
+            if first then
+                frame:AddMessage(ts .. line, info.r, info.g, info.b, info.id)
+                first = false
+            else
+                frame:AddMessage(indent..line, info.r, info.g, info.b, info.id)
+            end
+        end
+    else
+        frame:AddMessage(ts .. body, info.r, info.g, info.b, info.id)
+    end
 end
+
 
 local eventHandlers = {
 	GOSSIP_SHOW = function()
@@ -397,11 +449,11 @@ function GossipTracker:OnEvent(event,arg1)
 		self.textPlaying, self.buttonPress = false, false;
 		return
 	elseif event == "GOSSIP_CLOSED" or event == "QUEST_FINISHED" or event == "QUEST_TURNED_IN" then
-        if self.textPlaying and GossipChatter_DB.Interrupt then
-            C_VoiceChat.StopSpeakingText();
-            self.textPlaying, self.buttonPress = false, false;
-        end
-        return
+		if self.textPlaying and GossipChatter_DB.Interrupt then
+			C_VoiceChat.StopSpeakingText();
+			self.textPlaying, self.buttonPress = false, false;
+		end
+		return
 	elseif event == "ADDON_LOADED" and arg1 == "GossipChatter" then
 		if not GossipChatter_DB then GossipChatter_DB = {} end
 		InitDefaults(GossipChatter_DB, defaultsTable);

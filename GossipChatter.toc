@@ -9,6 +9,28 @@
 ## X-WoWI-ID: 26478
 ## X-Wago-ID: anKW0MGE
 
+## Title-enUS: Gossip Chatter
+## Notes-enUS: Prints the gossip / quest text in chat as if an NPC were speaking in /say.
+## Title-frFR: Gossip Chatter
+## Notes-frFR: Affiche les textes de ragot/quêtes dans le chat comme si un PNJ parlait en /dire.
+## Title-esES: Gossip Chatter
+## Notes-esES: Muestra los textos de rumores/misiones en el chat como si un PNJ hablara en /decir.
+## Title-esMX: Gossip Chatter
+## Notes-esMX: Muestra los textos de rumores/misiones en el chat como si un PNJ hablara en /decir.
+## Title-deDE: Gossip Chatter
+## Notes-deDE: Zeigt Gossip-/Questtext im Chat, als ob ein NSC in /sagen spräche.
+## Title-itIT: Gossip Chatter
+## Notes-itIT: Mostra i testi di dialogo/missioni nella chat come se un PNG parlasse in /dire.
+## Title-ptBR: Gossip Chatter
+## Notes-ptBR: Mostra textos de fofoca/missão no chat como se um PNJ falasse em /dizer.
+## Title-ruRU: Gossip Chatter
+## Notes-ruRU: Выводит текст диалогов/заданий в чат, как если бы НИП говорил в /сказать.
+## Title-koKR: Gossip Chatter
+## Notes-koKR: 대화/퀘스트 텍스트를 채팅에 출력하여 NPC가 /말하기로 말하는 것처럼 보입니다.
+## Title-zhCN: Gossip Chatter
+## Notes-zhCN: 在聊天中显示对话/任务文本，就像NPC在/说话中说话一样。
+## Title-zhTW: Gossip Chatter
+## Notes-zhTW: 在聊天中顯示對話/任務文字，就像NPC在/說話一樣。
 ## Category-enUS: Chat
 ## Category-deDE: Chat
 ## Category-esES: Chat
@@ -21,4 +43,5 @@
 ## Category-zhCN: 聊天
 ## Category-zhTW: 對話
 
+Localization.lua
 GossipChatter.lua
