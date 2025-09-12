@@ -1,3 +1,7 @@
+# 1.0.1
+
+Fix to Auto-TTS and Show Button options. These should now properly work according to the settings panel option selected.
+
 # 1.0.0
 
 Streamlined code better.

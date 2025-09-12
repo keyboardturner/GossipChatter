@@ -4,11 +4,12 @@ local L = gc.L
 local defaultsTable = {
 	SplitParagraphs = true,
 	Indent = false,
-	TTSButton = {locked = true, show = true, scale = 1, x = -35, y = 0, point = "CENTER", relativePoint = "RIGHT",},
+	TTSButton = {locked = true, scale = 1, x = -35, y = 0, point = "CENTER", relativePoint = "RIGHT",},
+	ShowButton = true,
 	AutoTTS = false,
 	Interrupt = true,
 	Format = false,
-    ChatFrame = 1,
+	ChatFrame = 1,
 	VoiceThey = {show = true, voiceID = 1, rate = 0, volume = 100,},
 	VoiceHe = {show = true, voiceID = 2, rate = 0, volume = 100,},
 	VoiceShe = {show = true, voiceID = 1, rate = 0, volume = 100,},
@@ -190,12 +191,7 @@ local function CreateTTSButton(parentFrame, isItemText)
 	return button
 end
 
--- create buttons for all frames
-GossipTracker.ttsButtons = {}
-for _, frame in ipairs(GossipTracker.ttsButtonParentFrames) do
-	local isItemText = (frame == ItemTextFrame.TitleContainer or frame == ItemTextFrame)
-	table.insert(GossipTracker.ttsButtons, CreateTTSButton(frame, isItemText))
-end
+
 
 
 
@@ -205,6 +201,17 @@ end
 
 
 local function RegisterGossipChatterSettings()
+	-- create buttons for all frames
+	GossipTracker.ttsButtons = {}
+	for _, frame in ipairs(GossipTracker.ttsButtonParentFrames) do
+		local isItemText = (frame == ItemTextFrame.TitleContainer or frame == ItemTextFrame)
+		local btn = CreateTTSButton(frame, isItemText)
+		if not GossipChatter_DB.ShowButton then
+			btn:Hide()
+		end
+		table.insert(GossipTracker.ttsButtons, btn)
+	end
+	
 	local category, layout = Settings.RegisterVerticalLayoutCategory("Gossip Chatter")
 
 	local CreateDropdown = Settings.CreateDropdown or Settings.CreateDropDown
@@ -237,31 +244,37 @@ local function RegisterGossipChatterSettings()
 	end
 
 	do
-	    local setting = Settings.RegisterAddOnSetting(category, "GC_ChatFrame", "ChatFrame", GossipChatter_DB, "number", L["Setting_OutputChatFrame"], 1)
-	    setting:SetValue(GossipChatter_DB.ChatFrame or 1)
+		local setting = Settings.RegisterAddOnSetting(category, "GC_ChatFrame", "ChatFrame", GossipChatter_DB, "number", L["Setting_OutputChatFrame"], 1)
+		setting:SetValue(GossipChatter_DB.ChatFrame or 1)
 
-	    local function GetOptions()
-	        local container = Settings.CreateControlTextContainer()
-	        for i = 1, NUM_CHAT_WINDOWS do
-	            local name = GetChatWindowInfo(i)
-	            if name and name ~= "" then
-	                container:Add(i, name)
-	            else
-	                container:Add(i, "ChatFrame " .. i)
-	            end
-	        end
-	        return container:GetData()
-	    end
-	    CreateDropdown(category, setting, GetOptions, L["Setting_OutputChatFrameTT"])
+		local function GetOptions()
+			local container = Settings.CreateControlTextContainer()
+			for i = 1, NUM_CHAT_WINDOWS do
+				local name = GetChatWindowInfo(i)
+				if name and name ~= "" then
+					container:Add(i, name)
+				else
+					container:Add(i, "ChatFrame " .. i)
+				end
+			end
+			return container:GetData()
+		end
+		CreateDropdown(category, setting, GetOptions, L["Setting_OutputChatFrameTT"])
 	end
 
 	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L["Setting_TextToSpeech"]))
 	do
-		local setting = RegisterSetting("ShowButton", GossipChatter_DB.TTSButton.show or true, L["Setting_ShowButton"])
+		local setting = RegisterSetting("ShowButton", GossipChatter_DB.ShowButton or true, L["Setting_ShowButton"])
 		CreateCheckbox(category, setting, L["Setting_ShowButtonTT"])
+		setting:SetValueChangedCallback(function(_, value)
+			GossipChatter_DB.ShowButton = value
+			for _, btn in ipairs(GossipTracker.ttsButtons or {}) do
+				if value then btn:Show() else btn:Hide() end
+			end
+		end)
 	end
 	do
-		local setting = RegisterSetting("AutoTTS", GossipChatter_DB.TTSButton.auto or false, L["Setting_AutoplayTTS"])
+		local setting = RegisterSetting("AutoTTS", GossipChatter_DB.AutoTTS or false, L["Setting_AutoplayTTS"])
 		CreateCheckbox(category, setting, L["Setting_AutoplayTTSTT"])
 	end
 	do
@@ -370,38 +383,38 @@ local function BuildBody(sender, text, chatFormat)
 end
 
 local function HandleOutput(sender, text, chatFormat, autoTTS, useUnk)
-    local body = BuildBody(sender, text, chatFormat)
-    if not body then return end
+	local body = BuildBody(sender, text, chatFormat)
+	if not body then return end
 
-    if IsDuplicateDialog(body) then return end
-    AddRecentDialog(body)
+	if IsDuplicateDialog(body) then return end
+	AddRecentDialog(body)
 
-    if autoTTS then
-        GossipTracker:Speak(text or bodyTTS, useUnk)
-    end
+	if autoTTS then
+		GossipTracker:Speak(text or bodyTTS, useUnk)
+	end
 
-    local info = ChatTypeInfo[useUnk and "MONSTER_EMOTE" or "MONSTER_SAY"]
-    local ts = date(C_CVar.GetCVar("showTimestamps"))
-    if ts == "none" or ts == nil then ts = "" end
+	local info = ChatTypeInfo[useUnk and "MONSTER_EMOTE" or "MONSTER_SAY"]
+	local ts = date(C_CVar.GetCVar("showTimestamps"))
+	if ts == "none" or ts == nil then ts = "" end
 
-    local indent = GossipChatter_DB.Indent and "  " or ""
+	local indent = GossipChatter_DB.Indent and "  " or ""
 
-    -- pick selected chat frame
-    local frame = _G["ChatFrame"..(GossipChatter_DB.ChatFrame or 1)] or DEFAULT_CHAT_FRAME
+	-- pick selected chat frame
+	local frame = _G["ChatFrame"..(GossipChatter_DB.ChatFrame or 1)] or DEFAULT_CHAT_FRAME
 
-    if GossipChatter_DB.SplitParagraphs then
-        local first = true
-        for line in body:gmatch("[^\n]+") do
-            if first then
-                frame:AddMessage(ts .. line, info.r, info.g, info.b, info.id)
-                first = false
-            else
-                frame:AddMessage(indent..line, info.r, info.g, info.b, info.id)
-            end
-        end
-    else
-        frame:AddMessage(ts .. body, info.r, info.g, info.b, info.id)
-    end
+	if GossipChatter_DB.SplitParagraphs then
+		local first = true
+		for line in body:gmatch("[^\n]+") do
+			if first then
+				frame:AddMessage(ts .. line, info.r, info.g, info.b, info.id)
+				first = false
+			else
+				frame:AddMessage(indent..line, info.r, info.g, info.b, info.id)
+			end
+		end
+	else
+		frame:AddMessage(ts .. body, info.r, info.g, info.b, info.id)
+	end
 end
 
 
