@@ -1,3 +1,7 @@
+# 1.0.2
+
+11.2.5 toc update
+
 # 1.0.1
 
 Fix to Auto-TTS and Show Button options. These should now properly work according to the settings panel option selected.

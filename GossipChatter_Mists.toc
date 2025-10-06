@@ -1,4 +1,4 @@
-## Interface: 50500
+## Interface: 50501
 ## Title: Gossip Chatter
 ## Notes: Prints the gossip / quest text in chat as if an NPC were speaking in /say.
 ## IconTexture: Interface/Addons/GossipChatter/GossipChatter.blp
