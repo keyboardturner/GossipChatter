@@ -1,3 +1,7 @@
+# 1.0.6
+
+Check for secret values
+
 # 1.0.5
 
 12.0.1 toc update

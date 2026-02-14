@@ -357,7 +357,7 @@ end
 ------------------------------------------------------------------------------------------------------------------
 
 local function BuildBody(sender, text, chatFormat)
-	if not text or text == "" then return nil end
+	if not text or text == "" or issecretvalue(text) or issecretvalue(sender) then return nil end
 
 	local body = (chatFormat and chatFormat:format(sender or "")) .. (text or "")
 
