@@ -1,3 +1,7 @@
+# 1.0.7
+
+12.0.5 toc update
+
 # 1.0.6
 
 Check for secret values
