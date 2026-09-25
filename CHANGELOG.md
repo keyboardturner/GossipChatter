@@ -1,3 +1,7 @@
+# 1.1.1
+
+WoW Forever testing - This is an in-development testing version. Some things may throw errors or explode.
+
 # 1.1.0
 
 TBC toc support and classic toc updates
