@@ -1,3 +1,7 @@
+# 1.1.2
+
+12.1.5 toc update
+
 # 1.1.1
 
 WoW Forever testing - This is an in-development testing version. Some things may throw errors or explode.
